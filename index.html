@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processador de CPF</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Processador de CPF</h1>
+        <form id="uploadForm" enctype="multipart/form-data" method="post" action="process.php">
+            <label for="file">Escolha uma planilha CSV:</label>
+            <input type="file" id="file" name="file" accept=".csv" required>
+            <button type="submit">Enviar e Processar</button>
+        </form>
+        <div id="result"></div>
+    </div>
+</body>
+</html>
