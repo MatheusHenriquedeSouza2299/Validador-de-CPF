@@ -10,9 +10,17 @@
     <div class="container">
         <h1>Processador de CPF</h1>
         <form id="uploadForm" enctype="multipart/form-data" method="post" action="process.php">
+            <h2>Enviar Arquivo CSV</h2>
             <label for="file">Escolha uma planilha CSV:</label>
-            <input type="file" id="file" name="file" accept=".csv" required>
-            <button type="submit">Enviar e Processar</button>
+            <input type="file" id="file" name="file" accept=".csv">
+            <button type="submit" name="submit_type" value="upload">Enviar e Processar</button>
+        </form>
+
+        <form id="cpfForm" method="post" action="process.php">
+            <h2>Ou Digitar CPF</h2>
+            <label for="cpf">Digite o CPF Base:</label>
+            <input type="text" id="cpf" name="cpf" placeholder="Digite o CPF Base" required>
+            <button type="submit" name="submit_type" value="manual">Validar e Gerar</button>
         </form>
         <div id="result"></div>
     </div>
