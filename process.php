@@ -1,4 +1,34 @@
 <?php
+function validarCPF($cpf) {
+    $cpf = preg_replace('/\D/', '', $cpf);
+
+    if (strlen($cpf) != 11) {
+        return false;
+    }
+
+    $soma = 0;
+    for ($i = 0; $i < 9; $i++) {
+        $soma += $cpf[$i] * (10 - $i);
+    }
+
+    $resto = ($soma * 10) % 11;
+    $resto = ($resto == 10 || $resto == 11) ? 0 : $resto;
+
+    if ($resto != $cpf[9]) {
+        return false;
+    }
+
+    $soma = 0;
+    for ($i = 0; $i < 10; $i++) {
+        $soma += $cpf[$i] * (11 - $i);
+    }
+
+    $resto = ($soma * 10) % 11;
+    $resto = ($resto == 10 || $resto == 11) ? 0 : $resto;
+
+    return $resto == $cpf[10];
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK && $_POST['submit_type'] === 'upload') {
         $fileTmpPath = $_FILES['file']['tmp_name'];
@@ -10,47 +40,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
-        // Função para validar o CPF
-        function validarCPF($cpf) {
-            $cpf = preg_replace('/\D/', '', $cpf);
-
-            if (strlen($cpf) != 11) {
-                return false;
-            }
-
-            $soma = 0;
-            for ($i = 0; $i < 9; $i++) {
-                $soma += $cpf[$i] * (10 - $i);
-            }
-
-            $resto = ($soma * 10) % 11;
-            $resto = ($resto == 10 || $resto == 11) ? 0 : $resto;
-
-            if ($resto != $cpf[9]) {
-                return false;
-            }
-
-            $soma = 0;
-            for ($i = 0; $i < 10; $i++) {
-                $soma += $cpf[$i] * (11 - $i);
-            }
-
-            $resto = ($soma * 10) % 11;
-            $resto = ($resto == 10 || $resto == 11) ? 0 : $resto;
-
-            return $resto == $cpf[10];
-        }
-
         $validCpfs = [];
 
-        // Lê o arquivo CSV e processa
         if (($handle = fopen($fileTmpPath, 'r')) !== FALSE) {
-            fgetcsv($handle); // Pular o cabeçalho, se houver
+            fgetcsv($handle); // Skip header
 
             while (($data = fgetcsv($handle, 1000, ',')) !== FALSE) {
                 $cpfBase = $data[0];
                 if (strlen($cpfBase) == 8) {
-                    for ($i = 0; $i < 1000; $i++) {
+                    for ($i = 0; $i < 1000; $i++) { // Correção aqui: adicionado '$' antes de 'i'
                         $prefix = str_pad($i, 3, '0', STR_PAD_LEFT);
                         $cpf = $prefix . $cpfBase;
 
@@ -63,57 +61,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             fclose($handle);
         }
 
-        // Gera o arquivo CSV com CPFs válidos
         $outputFile = 'cpfs_validos_' . date('YmdHis') . '.csv';
         $fp = fopen($outputFile, 'w');
-        fputcsv($fp, ['CPF Base', 'CPF Válido']); // Cabeçalho
+        fputcsv($fp, ['CPF Base', 'CPF Válido']);
         foreach ($validCpfs as $cpf) {
             fputcsv($fp, $cpf);
         }
         fclose($fp);
 
-        // Exibe o resultado com link para download
         echo '<html><body>';
         echo '<h1>Resultados</h1>';
         echo '<h3><a href="' . $outputFile . '" download>Baixar arquivo CSV com CPFs válidos</a></h3>';
+        echo '<button onclick="history.back()">Voltar</button>';
         echo '</body></html>';
     } elseif (isset($_POST['cpf']) && !empty($_POST['cpf']) && $_POST['submit_type'] === 'manual') {
         $cpfBase = $_POST['cpf'];
 
-        // Função para validar o CPF
-        function validarCPF($cpf) {
-            $cpf = preg_replace('/\D/', '', $cpf);
-
-            if (strlen($cpf) != 11) {
-                return false;
-            }
-
-            $soma = 0;
-            for ($i = 0; $i < 9; $i++) {
-                $soma += $cpf[$i] * (10 - $i);
-            }
-
-            $resto = ($soma * 10) % 11;
-            $resto = ($resto == 10 || $resto == 11) ? 0 : $resto;
-
-            if ($resto != $cpf[9]) {
-                return false;
-            }
-
-            $soma = 0;
-            for ($i = 0; $i < 10; $i++) {
-                $soma += $cpf[$i] * (11 - $i);
-            }
-
-            $resto = ($soma * 10) % 11;
-            $resto = ($resto == 10 || $resto == 11) ? 0 : $resto;
-
-            return $resto == $cpf[10];
-        }
-
         $validCpfs = [];
         if (strlen($cpfBase) == 8) {
-            for ($i = 0; $i < 1000; $i++) {
+            for ($i = 0; $i < 1000; $i++) { // Correção aqui: adicionado '$' antes de 'i'
                 $prefix = str_pad($i, 3, '0', STR_PAD_LEFT);
                 $cpf = $prefix . $cpfBase;
 
@@ -123,16 +89,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Gera o arquivo CSV com CPFs válidos
         $outputFile = 'cpfs_validos_' . date('YmdHis') . '.csv';
         $fp = fopen($outputFile, 'w');
-        fputcsv($fp, ['CPF Válido']); // Cabeçalho
+        fputcsv($fp, ['CPF Válido']);
         foreach ($validCpfs as $cpf) {
             fputcsv($fp, [$cpf]);
         }
         fclose($fp);
 
-        // Exibe o resultado com link para download
         echo '<html><body>';
         echo '<h1>Resultados</h1>';
         if (!empty($validCpfs)) {
@@ -146,6 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             echo '<p>Nenhum CPF válido encontrado.</p>';
         }
+        echo '<button onclick="history.back()">Voltar</button>';
         echo '</body></html>';
     } else {
         echo 'Por favor, forneça um arquivo CSV ou um CPF.';
